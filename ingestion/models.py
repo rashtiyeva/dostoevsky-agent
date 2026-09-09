@@ -14,3 +14,11 @@ class Chapter:
     part: str
     chapter: str
     text: str
+
+@dataclass
+class Chunk:
+    book_id: str
+    part: str
+    chapter: str
+    text: str
+    chunk_index: int
