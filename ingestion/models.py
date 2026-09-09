@@ -8,3 +8,9 @@ class Document:
     author: str
     language: str
     text: str
+
+@dataclass
+class Chapter:
+    part: str
+    chapter: str
+    text: str
