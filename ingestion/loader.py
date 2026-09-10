@@ -20,4 +20,6 @@ def load_document(book_dir: Path) -> Document:
         author=metadata["author"],
         language=metadata["language"],
         text=text,
+        start_marker=metadata.get("start_marker"),
+        end_marker=metadata.get("end_marker"),
     )

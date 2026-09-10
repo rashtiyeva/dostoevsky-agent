@@ -3,6 +3,6 @@
   "title": "Записки из подполья",
   "author": "Фёдор Михайлович Достоевский",
   "language": "ru",
-  "start_marker": "ЗАПИСКИ ИЗ ПОДПОЛЬЯ",
-  "end_marker": "Примечания к повести"
+  "start_marker": "Часть I",
+  "end_marker": "notes"
 }
