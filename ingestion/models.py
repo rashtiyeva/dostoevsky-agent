@@ -8,17 +8,45 @@ class Document:
     author: str
     language: str
     text: str
+    start_marker: str | None
+    end_marker: str | None
+
 
 @dataclass
-class Chapter:
-    part: str
-    chapter: str
+class DocumentSection:
+    book_id: str
+    content_type: str
     text: str
+
+
+@dataclass
+class Section:
+    part: str | None
+    part_title: str | None
+
+    book: str | None
+
+    chapter: str | None
+    chapter_title: str | None
+
+    section: str | None
+    text: str
+
 
 @dataclass
 class Chunk:
     book_id: str
-    part: str
-    chapter: str
+
+    part: str | None
+    part_title: str | None
+
+    book: str | None
+
+    chapter: str | None
+    chapter_title: str | None
+
+    section: str | None
+
     text: str
     chunk_index: int
+    content_type: str
