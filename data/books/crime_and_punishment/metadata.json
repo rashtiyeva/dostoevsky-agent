@@ -2,5 +2,7 @@
   "book_id": "crime_and_punishment",
   "title": "Преступление и наказание",
   "author": "Фёдор Михайлович Достоевский",
-  "language": "ru"
+  "language": "ru",
+  "start_marker": "Часть первая",
+  "end_marker": "notes"
 }
