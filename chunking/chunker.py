@@ -2,7 +2,7 @@ import re
 
 import tiktoken
 
-from chunking.config import MAX_TOKENS, OVERLAP_TOKENS
+from chunking.config import MAX_TOKENS, MIN_CHUNK_TOKENS, OVERLAP_TOKENS
 from chunking.models import Chunk
 from ingestion.models import Section
 
@@ -167,6 +167,7 @@ def build_chunk(
         chapter=section.chapter,
         chapter_title=section.chapter_title,
         section=section.section,
+        section_title=section.section_title,
         text="\n\n".join(paragraphs),
         chunk_index=chunk_index,
         content_type="main_text",
@@ -189,12 +190,85 @@ def append_chunk(
     )
 
 
+def append_or_merge_small_tail(
+    chunks: list[Chunk],
+    section: Section,
+    book_id: str,
+    paragraphs: list[str],
+    overlap: str,
+    min_tokens: int,
+    max_tokens: int,
+) -> None:
+    tail_parts = paragraphs
+
+    if (
+        overlap
+        and tail_parts
+        and tail_parts[0] == overlap
+    ):
+        tail_parts = tail_parts[1:]
+
+    tail_text = "\n\n".join(tail_parts)
+
+    if (
+        count_tokens(tail_text) >= min_tokens
+        or not chunks
+    ):
+        append_chunk(
+            chunks,
+            section,
+            book_id,
+            paragraphs,
+        )
+        return
+
+    if not tail_parts:
+        return
+
+    merged_text = "\n\n".join(
+        [
+            chunks[-1].text,
+            *tail_parts,
+        ]
+    )
+
+    if count_tokens(merged_text) > max_tokens:
+        append_chunk(
+            chunks,
+            section,
+            book_id,
+            paragraphs,
+        )
+        return
+
+    chunks[-1] = build_chunk(
+        section=section,
+        book_id=book_id,
+        paragraphs=[
+            chunks[-1].text,
+            *tail_parts,
+        ],
+        chunk_index=chunks[-1].chunk_index,
+    )
+
+
 def chunk_section(
     section: Section,
     book_id: str,
     max_tokens: int = MAX_TOKENS,
+    min_tokens: int = MIN_CHUNK_TOKENS,
     overlap_tokens: int = OVERLAP_TOKENS,
 ) -> list[Chunk]:
+    if min_tokens < 0:
+        raise ValueError(
+            "min_tokens cannot be negative"
+        )
+
+    if min_tokens >= max_tokens:
+        raise ValueError(
+            "min_tokens must be smaller than max_tokens"
+        )
+
     if overlap_tokens < 0:
         raise ValueError(
             "overlap_tokens cannot be negative"
@@ -214,6 +288,7 @@ def chunk_section(
 
     chunks: list[Chunk] = []
     current_parts: list[str] = []
+    current_overlap = ""
 
     for unit in units:
         candidate = "\n\n".join(
@@ -242,6 +317,8 @@ def chunk_section(
                 max_tokens=max_tokens,
             )
 
+            current_overlap = overlap
+
             current_parts = (
                 [overlap]
                 if overlap
@@ -251,11 +328,14 @@ def chunk_section(
         current_parts.append(unit)
 
     if current_parts:
-        append_chunk(
-            chunks,
-            section,
-            book_id,
-            current_parts,
+        append_or_merge_small_tail(
+            chunks=chunks,
+            section=section,
+            book_id=book_id,
+            paragraphs=current_parts,
+            overlap=current_overlap,
+            min_tokens=min_tokens,
+            max_tokens=max_tokens,
         )
 
     return chunks

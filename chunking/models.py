@@ -14,6 +14,7 @@ class Chunk:
     chapter_title: str | None
 
     section: str | None
+    section_title: str | None
 
     text: str
     chunk_index: int

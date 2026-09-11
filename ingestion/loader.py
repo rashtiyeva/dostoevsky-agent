@@ -22,4 +22,8 @@ def load_document(book_dir: Path) -> Document:
         text=text,
         start_marker=metadata.get("start_marker"),
         end_marker=metadata.get("end_marker"),
+        has_section_titles=metadata.get(
+            "has_section_titles",
+            False,
+        ),
     )

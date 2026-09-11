@@ -10,6 +10,7 @@ class Document:
     text: str
     start_marker: str | None
     end_marker: str | None
+    has_section_titles: bool
 
 
 @dataclass
@@ -30,6 +31,8 @@ class Section:
     chapter_title: str | None
 
     section: str | None
+    section_title: str | None
+
     text: str
 
 

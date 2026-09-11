@@ -4,5 +4,7 @@
   "author": "Фёдор Михайлович Достоевский",
   "language": "ru",
   "start_marker": "ЧАСТЬ ПЕРВАЯ",
-  "end_marker": null
+  "end_marker": null,
+  "has_section_titles": false
+
 }

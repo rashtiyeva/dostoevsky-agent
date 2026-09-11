@@ -40,12 +40,16 @@ class _ParserState:
     chapter_title: str | None = None
 
     section: str | None = None
+    section_title: str | None = None
 
     text: list[str] = field(default_factory=list)
+
     waiting_for_title: str | None = None
 
 
-def _build_section(state: _ParserState) -> Section | None:
+def _build_section(
+    state: _ParserState,
+) -> Section | None:
     text = "\n".join(state.text).strip()
 
     if not text:
@@ -58,6 +62,7 @@ def _build_section(state: _ParserState) -> Section | None:
         chapter=state.chapter,
         chapter_title=state.chapter_title,
         section=state.section,
+        section_title=state.section_title,
         text=text,
     )
 
@@ -87,6 +92,8 @@ def _start_part(
     state.chapter_title = None
 
     state.section = None
+    state.section_title = None
+
     state.waiting_for_title = "part"
 
 
@@ -100,8 +107,9 @@ def _start_book(
     state.chapter_title = None
 
     state.section = None
+    state.section_title = None
 
-    # The book title is already part of the heading:
+    # Book title is already part of the heading:
     # "Книга двенадцатая: Судебная ошибка"
     state.waiting_for_title = None
 
@@ -114,15 +122,24 @@ def _start_chapter(
     state.chapter_title = None
 
     state.section = None
+    state.section_title = None
+
     state.waiting_for_title = "chapter"
 
 
 def _start_section(
     state: _ParserState,
     section: str,
+    has_section_titles: bool,
 ) -> None:
     state.section = section.rstrip(".")
-    state.waiting_for_title = None
+    state.section_title = None
+
+    state.waiting_for_title = (
+        "section"
+        if has_section_titles
+        else None
+    )
 
 
 def _set_optional_title(
@@ -139,10 +156,18 @@ def _set_optional_title(
         state.waiting_for_title = None
         return True
 
+    if state.waiting_for_title == "section":
+        state.section_title = line
+        state.waiting_for_title = None
+        return True
+
     return False
 
 
-def parse_sections(text: str) -> list[Section]:
+def parse_sections(
+    text: str,
+    has_section_titles: bool = False,
+) -> list[Section]:
     sections: list[Section] = []
     state = _ParserState()
 
@@ -171,6 +196,7 @@ def parse_sections(text: str) -> list[Section]:
                 state,
                 stripped_line,
             )
+
             continue
 
         if BOOK_PATTERN.fullmatch(stripped_line):
@@ -183,6 +209,7 @@ def parse_sections(text: str) -> list[Section]:
                 state,
                 stripped_line,
             )
+
             continue
 
         if CHAPTER_PATTERN.fullmatch(stripped_line):
@@ -195,6 +222,7 @@ def parse_sections(text: str) -> list[Section]:
                 state,
                 stripped_line,
             )
+
             continue
 
         if SECTION_PATTERN.fullmatch(stripped_line):
@@ -206,7 +234,9 @@ def parse_sections(text: str) -> list[Section]:
             _start_section(
                 state,
                 stripped_line,
+                has_section_titles,
             )
+
             continue
 
         if _set_optional_title(
