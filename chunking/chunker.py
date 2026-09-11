@@ -1,7 +1,7 @@
 import re
 
-from ingestion.models import Chunk, Section
-
+from chunking.models import Chunk
+from ingestion.models import Section
 
 SENTENCE_SPLIT_PATTERN = re.compile(r"(?<=[.!?…])\s+")
 

@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from ingestion.chunker import chunk_section
+from chunking.chunker import chunk_section
 from ingestion.cleaner import clean_text
 from ingestion.extractor import extract_book_text
 from ingestion.loader import load_document
