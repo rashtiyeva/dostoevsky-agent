@@ -3,7 +3,6 @@ from dataclasses import dataclass, field
 
 from ingestion.models import Section
 
-
 PART_PATTERN = re.compile(
     r"(Часть\s+(?:[IVXLCDM]+|[А-Яа-яЁё]+)|Эпилог)",
     re.IGNORECASE,
@@ -31,7 +30,7 @@ NOTES_PATTERN = re.compile(
 
 
 @dataclass
-class ParserState:
+class _ParserState:
     part: str | None = None
     part_title: str | None = None
 
@@ -46,7 +45,7 @@ class ParserState:
     waiting_for_title: str | None = None
 
 
-def _build_section(state: ParserState) -> Section | None:
+def _build_section(state: _ParserState) -> Section | None:
     text = "\n".join(state.text).strip()
 
     if not text:
@@ -65,7 +64,7 @@ def _build_section(state: ParserState) -> Section | None:
 
 def _save_current_section(
     sections: list[Section],
-    state: ParserState,
+    state: _ParserState,
 ) -> None:
     section = _build_section(state)
 
@@ -76,7 +75,7 @@ def _save_current_section(
 
 
 def _start_part(
-    state: ParserState,
+    state: _ParserState,
     part: str,
 ) -> None:
     state.part = part
@@ -92,7 +91,7 @@ def _start_part(
 
 
 def _start_book(
-    state: ParserState,
+    state: _ParserState,
     book: str,
 ) -> None:
     state.book = book
@@ -108,7 +107,7 @@ def _start_book(
 
 
 def _start_chapter(
-    state: ParserState,
+    state: _ParserState,
     chapter: str,
 ) -> None:
     state.chapter = chapter
@@ -119,7 +118,7 @@ def _start_chapter(
 
 
 def _start_section(
-    state: ParserState,
+    state: _ParserState,
     section: str,
 ) -> None:
     state.section = section.rstrip(".")
@@ -127,7 +126,7 @@ def _start_section(
 
 
 def _set_optional_title(
-    state: ParserState,
+    state: _ParserState,
     line: str,
 ) -> bool:
     if state.waiting_for_title == "part":
@@ -145,7 +144,7 @@ def _set_optional_title(
 
 def parse_sections(text: str) -> list[Section]:
     sections: list[Section] = []
-    state = ParserState()
+    state = _ParserState()
 
     for line in text.splitlines():
         stripped_line = line.strip()
