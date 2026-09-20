@@ -1,5 +1,6 @@
 from sentence_transformers import SentenceTransformer
 
+
 MODEL_NAME = "BAAI/bge-m3"
 
 
@@ -8,12 +9,13 @@ class EmbeddingModel:
         self.model = SentenceTransformer(MODEL_NAME)
 
     def embed(self, text: str) -> list[float]:
-           embedding = self.model.encode(
+        embedding = self.model.encode(
             text,
             normalize_embeddings=True,
         )
-           return embedding.tolist()
-    
+
+        return embedding.tolist()
+
     def embed_batch(
         self,
         texts: list[str],
