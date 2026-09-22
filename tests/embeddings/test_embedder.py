@@ -65,5 +65,7 @@ def test_embed_batch_returns_normalized_lists(
             "first text",
             "second text",
         ],
+        batch_size=32,
         normalize_embeddings=True,
+        show_progress_bar=False,
     )
