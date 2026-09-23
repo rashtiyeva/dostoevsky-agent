@@ -12,7 +12,6 @@ from vector_store.qdrant_store import (
     QdrantStore,
 )
 
-
 BOOK_DIR = Path("data/books/crime_and_punishment")
 
 

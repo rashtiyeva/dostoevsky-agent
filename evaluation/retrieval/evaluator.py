@@ -1,7 +1,18 @@
 from dataclasses import dataclass
+from typing import Protocol
 
 from evaluation.retrieval.models import RetrievalEvaluationCase
+from retrieval.models import RetrievedChunk
 from retrieval.retriever import DenseRetriever
+
+
+class Retriever(Protocol):
+    def retrieve(
+        self,
+        query: str,
+        limit: int = 10,
+    ) -> list[RetrievedChunk]:
+        ...
 
 
 @dataclass
@@ -15,8 +26,11 @@ class RetrievalEvaluationResult:
 
 
 class RetrievalEvaluator:
-    def __init__(self) -> None:
-        self.retriever = DenseRetriever()
+    def __init__(
+        self,
+        retriever: Retriever | None = None,
+    ) -> None:
+        self.retriever = retriever or DenseRetriever()
 
     def evaluate_case(
         self,
