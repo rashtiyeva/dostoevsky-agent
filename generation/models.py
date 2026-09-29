@@ -1,7 +1,8 @@
-from pydantic import BaseModel
+from dataclasses import dataclass
 
 
-class CitationResponse(BaseModel):
+@dataclass
+class Citation:
     number: int
     book_id: str
     chapter: str | None
@@ -10,6 +11,7 @@ class CitationResponse(BaseModel):
     text: str
 
 
-class ChatResponse(BaseModel):
+@dataclass
+class GeneratedAnswer:
     answer: str
-    citations: list[CitationResponse]
+    citations: list[Citation]

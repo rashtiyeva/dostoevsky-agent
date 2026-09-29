@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 
-from app.llm.openai_client import generate_response
 from app.schemas.chat_request import ChatRequest
-from app.schemas.chat_response import ChatResponse
+from app.schemas.chat_response import ChatResponse, CitationResponse
+from app.services.rag_service import generate_rag_response
 
 app = FastAPI()
 
@@ -14,8 +14,19 @@ def health():
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
-    answer = generate_response(request.message)
+    result = generate_rag_response(request.message)
 
     return ChatResponse(
-        answer=answer
+        answer=result.answer,
+        citations=[
+            CitationResponse(
+                number=citation.number,
+                book_id=citation.book_id,
+                chapter=citation.chapter,
+                section=citation.section,
+                chunk_index=citation.chunk_index,
+                text=citation.text,
+            )
+            for citation in result.citations
+        ],
     )
