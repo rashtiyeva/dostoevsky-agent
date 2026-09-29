@@ -1,10 +1,17 @@
 from fastapi import FastAPI
 
+from agent.agent import DostoevskyAgent
 from app.schemas.chat_request import ChatRequest
-from app.schemas.chat_response import ChatResponse, CitationResponse
-from app.services.rag_service import generate_rag_response
+from app.schemas.chat_response import (
+    ChatResponse,
+    CorpusSourceResponse,
+    WebSourceResponse,
+)
+
 
 app = FastAPI()
+
+agent = DostoevskyAgent()
 
 
 @app.get("/health")
@@ -14,19 +21,27 @@ def health():
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
-    result = generate_rag_response(request.message)
+    result = agent.run(request.message)
 
     return ChatResponse(
         answer=result.answer,
-        citations=[
-            CitationResponse(
-                number=citation.number,
-                book_id=citation.book_id,
-                chapter=citation.chapter,
-                section=citation.section,
-                chunk_index=citation.chunk_index,
-                text=citation.text,
+        corpus_sources=[
+            CorpusSourceResponse(
+                number=source.number,
+                book_id=source.book_id,
+                chapter=source.chapter,
+                section=source.section,
+                chunk_index=source.chunk_index,
+                text=source.text,
             )
-            for citation in result.citations
+            for source in result.corpus_sources
+        ],
+        web_sources=[
+            WebSourceResponse(
+                number=source.number,
+                title=source.title,
+                url=source.url,
+            )
+            for source in result.web_sources
         ],
     )

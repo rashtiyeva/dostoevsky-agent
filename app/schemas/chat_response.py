@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class CitationResponse(BaseModel):
+class CorpusSourceResponse(BaseModel):
     number: int
     book_id: str
     chapter: str | None
@@ -10,6 +10,13 @@ class CitationResponse(BaseModel):
     text: str
 
 
+class WebSourceResponse(BaseModel):
+    number: int
+    title: str
+    url: str
+
+
 class ChatResponse(BaseModel):
     answer: str
-    citations: list[CitationResponse]
+    corpus_sources: list[CorpusSourceResponse]
+    web_sources: list[WebSourceResponse]
