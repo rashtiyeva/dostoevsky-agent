@@ -2,7 +2,6 @@ from sentence_transformers import CrossEncoder
 
 from retrieval.models import RetrievedChunk
 
-
 RERANKER_MODEL_NAME = "BAAI/bge-reranker-v2-m3"
 
 

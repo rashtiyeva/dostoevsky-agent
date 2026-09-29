@@ -1,6 +1,5 @@
 from retrieval.retriever import DenseRetriever
 
-
 QUERIES = [
     # Crime and Punishment
     "Почему Раскольников совершил убийство?",
