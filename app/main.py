@@ -1,4 +1,7 @@
+from collections.abc import Iterable
+
 from fastapi import FastAPI
+from fastapi.sse import EventSourceResponse, ServerSentEvent
 
 from agent.agent import DostoevskyAgent
 from app.schemas.chat_request import ChatRequest
@@ -7,7 +10,7 @@ from app.schemas.chat_response import (
     CorpusSourceResponse,
     WebSourceResponse,
 )
-
+from app.streaming import to_sse_events
 
 app = FastAPI()
 
@@ -44,4 +47,16 @@ def chat(request: ChatRequest):
             )
             for source in result.web_sources
         ],
+    )
+
+
+@app.post(
+    "/chat/stream",
+    response_class=EventSourceResponse,
+)
+def chat_stream(
+    request: ChatRequest,
+) -> Iterable[ServerSentEvent]:
+    return to_sse_events(
+        agent.stream(request.message)
     )
