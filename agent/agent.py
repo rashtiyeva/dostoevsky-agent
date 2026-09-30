@@ -1,6 +1,14 @@
 import json
+from collections.abc import Iterator
 
-from agent.models import AgentDecision, AgentResponse, AgentToolCall, ToolName
+from agent.models import (
+    AgentDecision,
+    AgentResponse,
+    AgentStreamEvent,
+    AgentStreamEventType,
+    AgentToolCall,
+    ToolName,
+)
 from agent.prompts import AGENT_INSTRUCTIONS, FINAL_ANSWER_PROMPT
 from agent.tool_definitions import AGENT_TOOLS
 from agent.tool_executor import ToolExecutor
@@ -66,15 +74,7 @@ class DostoevskyAgent:
             results=results,
         )
 
-        corpus_sources = []
-        web_sources = []
-
-        for _, result in results:
-            if isinstance(result, CorpusSearchResult):
-                corpus_sources.extend(result.sources)
-
-            elif isinstance(result, WebSearchResult):
-                web_sources.extend(result.sources)
+        corpus_sources, web_sources = self._collect_sources(results)
 
         return AgentResponse(
             answer=answer,
@@ -82,7 +82,155 @@ class DostoevskyAgent:
             web_sources=web_sources,
         )
 
+    def stream(
+        self,
+        query: str,
+    ) -> Iterator[AgentStreamEvent]:
+        try:
+            yield AgentStreamEvent(
+                type=AgentStreamEventType.STATUS,
+                data={"message": "Analyzing your question..."},
+            )
+
+            decision = self.decide_tools(query)
+
+            if not decision.tool_calls:
+                answer = decision.answer or (
+                    "I can only help with questions related to Dostoevsky."
+                )
+
+                yield AgentStreamEvent(
+                    type=AgentStreamEventType.TOKEN,
+                    data={"text": answer},
+                )
+
+                yield AgentStreamEvent(
+                    type=AgentStreamEventType.SOURCES,
+                    data={
+                        "corpus_sources": [],
+                        "web_sources": [],
+                    },
+                )
+
+                yield AgentStreamEvent(
+                    type=AgentStreamEventType.DONE,
+                    data={},
+                )
+                return
+
+            results = []
+
+            for tool_call in decision.tool_calls:
+                if tool_call.tool == ToolName.CORPUS_SEARCH:
+                    message = "Searching Dostoevsky corpus..."
+                else:
+                    message = "Searching external sources..."
+
+                yield AgentStreamEvent(
+                    type=AgentStreamEventType.STATUS,
+                    data={"message": message},
+                )
+
+                result = self.executor.execute(tool_call)
+                results.append((tool_call, result))
+
+            yield AgentStreamEvent(
+                type=AgentStreamEventType.STATUS,
+                data={"message": "Generating answer..."},
+            )
+
+            for text_delta in self._stream_final_answer(
+                query=query,
+                results=results,
+            ):
+                yield AgentStreamEvent(
+                    type=AgentStreamEventType.TOKEN,
+                    data={"text": text_delta},
+                )
+
+            corpus_sources, web_sources = self._collect_sources(results)
+
+            yield AgentStreamEvent(
+                type=AgentStreamEventType.SOURCES,
+                data={
+                    "corpus_sources": [
+                        {
+                            "number": source.number,
+                            "book_id": source.book_id,
+                            "chapter": source.chapter,
+                            "section": source.section,
+                            "chunk_index": source.chunk_index,
+                            "text": source.text,
+                        }
+                        for source in corpus_sources
+                    ],
+                    "web_sources": [
+                        {
+                            "number": source.number,
+                            "title": source.title,
+                            "url": source.url,
+                        }
+                        for source in web_sources
+                    ],
+                },
+            )
+
+            yield AgentStreamEvent(
+                type=AgentStreamEventType.DONE,
+                data={},
+            )
+
+        except Exception as exc:
+            yield AgentStreamEvent(
+                type=AgentStreamEventType.ERROR,
+                data={
+                    "message": "Failed to process the request.",
+                    "detail": str(exc),
+                },
+            )
+
     def _generate_final_answer(
+        self,
+        query: str,
+        results: list[
+            tuple[AgentToolCall, CorpusSearchResult | WebSearchResult]
+        ],
+    ) -> str:
+        prompt = self._build_final_prompt(
+            query=query,
+            results=results,
+        )
+
+        response = client.responses.create(
+            model="gpt-5.6",
+            input=prompt,
+        )
+
+        return response.output_text
+
+    def _stream_final_answer(
+        self,
+        query: str,
+        results: list[
+            tuple[AgentToolCall, CorpusSearchResult | WebSearchResult]
+        ],
+    ) -> Iterator[str]:
+        prompt = self._build_final_prompt(
+            query=query,
+            results=results,
+        )
+
+        stream = client.responses.create(
+            model="gpt-5.6",
+            input=prompt,
+            stream=True,
+        )
+
+        for event in stream:
+            if event.type == "response.output_text.delta":
+                yield event.delta
+
+    def _build_final_prompt(
         self,
         query: str,
         results: list[
@@ -125,14 +273,25 @@ class DostoevskyAgent:
 
         context = "\n\n---\n\n".join(context_parts)
 
-        prompt = FINAL_ANSWER_PROMPT.format(
+        return FINAL_ANSWER_PROMPT.format(
             query=query,
             context=context,
         )
 
-        response = client.responses.create(
-            model="gpt-5.6",
-            input=prompt,
-        )
+    @staticmethod
+    def _collect_sources(
+        results: list[
+            tuple[AgentToolCall, CorpusSearchResult | WebSearchResult]
+        ],
+    ) -> tuple[list, list]:
+        corpus_sources = []
+        web_sources = []
 
-        return response.output_text
+        for _, result in results:
+            if isinstance(result, CorpusSearchResult):
+                corpus_sources.extend(result.sources)
+
+            elif isinstance(result, WebSearchResult):
+                web_sources.extend(result.sources)
+
+        return corpus_sources, web_sources

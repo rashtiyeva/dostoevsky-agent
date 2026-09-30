@@ -7,7 +7,13 @@ from tools.models import CorpusSource, WebSource
 class ToolName(str, Enum):
     CORPUS_SEARCH = "corpus_search"
     WEB_SEARCH = "web_search"
-
+    
+class AgentStreamEventType(str, Enum):
+    STATUS = "status"
+    TOKEN = "token"
+    SOURCES = "sources"
+    DONE = "done"
+    ERROR = "error"
 
 @dataclass
 class AgentToolCall:
@@ -26,3 +32,8 @@ class AgentResponse:
     answer: str
     corpus_sources: list[CorpusSource]
     web_sources: list[WebSource]
+    
+@dataclass
+class AgentStreamEvent:
+    type: AgentStreamEventType
+    data: dict
