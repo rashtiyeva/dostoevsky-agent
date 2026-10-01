@@ -1,0 +1,27 @@
+.git
+.github
+.venv
+venv
+**/__pycache__
+**/*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.env
+.env.*
+!.env.example
+.vscode
+.idea
+.cache
+**/.cache
+*.log
+*.tar
+*.zip
+dist
+build
+node_modules
+tests
+evaluation
+docs
+*.md
+# data/books is required by both first-run indexing and BM25 at runtime.

@@ -91,3 +91,23 @@ def test_upsert_chunk():
     assert point.payload["chapter"] == "Глава I"
     assert point.payload["text"] == "В начале июля..."
     assert point.payload["chunk_index"] == 0
+
+@patch("vector_store.qdrant_store.QdrantClient")
+def test_qdrant_url_defaults_to_localhost(mock_client, monkeypatch):
+    monkeypatch.delenv("QDRANT_URL", raising=False)
+    QdrantStore()
+    mock_client.assert_called_once_with(url="http://localhost:6333")
+
+
+@patch("vector_store.qdrant_store.QdrantClient")
+def test_qdrant_url_uses_environment(mock_client, monkeypatch):
+    monkeypatch.setenv("QDRANT_URL", "http://qdrant:6333")
+    QdrantStore()
+    mock_client.assert_called_once_with(url="http://qdrant:6333")
+
+
+@patch("vector_store.qdrant_store.QdrantClient")
+def test_explicit_qdrant_url_takes_precedence(mock_client, monkeypatch):
+    monkeypatch.setenv("QDRANT_URL", "http://qdrant:6333")
+    QdrantStore(url="http://custom:6333")
+    mock_client.assert_called_once_with(url="http://custom:6333")
