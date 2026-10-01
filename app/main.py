@@ -1,7 +1,10 @@
 from collections.abc import Iterable
+from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from fastapi.sse import EventSourceResponse, ServerSentEvent
+from fastapi.staticfiles import StaticFiles
 
 from agent.agent import DostoevskyAgent
 from app.schemas.chat_request import ChatRequest
@@ -13,6 +16,20 @@ from app.schemas.chat_response import (
 from app.streaming import to_sse_events
 
 app = FastAPI()
+
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
+
+app.mount(
+    "/static",
+    StaticFiles(directory=FRONTEND_DIR),
+    name="static",
+)
+
+
+@app.get("/", include_in_schema=False)
+def research_ui():
+    return FileResponse(FRONTEND_DIR / "index.html")
+
 
 agent = DostoevskyAgent()
 

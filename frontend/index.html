@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#284b3e">
+  <meta name="description" content="Explore Dostoevsky's works, ideas and scholarship. A place for closer reading and literary research.">
+  <title>Dostoevsky Research Agent</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='5' fill='%23284b3e'/%3E%3Ctext x='10' y='29' font-family='Georgia' font-size='29' fill='%23f7f6ef'%3ED%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="page">
+    <header class="site-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none"><path d="M5 7c4-1 8 0 11 2 3-2 7-3 11-2v19c-4-1-8 0-11 2-3-2-7-3-11-2V7Zm11 2v19" stroke="currentColor" stroke-width="1.4"/></svg>
+        </span>
+        <span class="brand-name">Dostoevsky<span>Research Agent</span></span>
+      </div>
+      <span class="header-note">Literature. Ideas. Inquiry.</span>
+    </header>
+
+    <main id="main">
+      <section id="landing" class="landing" aria-labelledby="intro-title">
+        <p class="eyebrow ornament">A closer reading</p>
+        <h1 id="intro-title">Great literature.<br><em>Deeper questions.</em></h1>
+        <p class="intro">Explore Dostoevsky’s works, ideas and scholarship.<br class="wide-only"> Begin with a question. Follow the evidence.</p>
+        <form id="research-form" class="research-form">
+          <label for="query">Your research question</label>
+          <textarea id="query" name="message" rows="3" required placeholder="What would you like to understand about Dostoevsky?" aria-describedby="query-hint"></textarea>
+          <div class="form-footer">
+            <p id="query-hint">Take your time. Ask in your own words.<br><span class="shortcut">Ctrl / ⌘ + Enter to research</span></p>
+            <button id="submit-button" class="button primary" type="submit" disabled>Research <span aria-hidden="true">↗</span></button>
+          </div>
+        </form>
+        <div class="examples" aria-label="Example research questions">
+          <p class="eyebrow">A place to begin</p>
+          <button type="button" class="example"><span>How does Dostoevsky explore guilt in Crime and Punishment?</span><span aria-hidden="true">↗</span></button>
+          <button type="button" class="example"><span>What does the Underground Man reveal about free will?</span><span aria-hidden="true">↗</span></button>
+          <button type="button" class="example"><span>How do faith and doubt shape The Brothers Karamazov?</span><span aria-hidden="true">↗</span></button>
+        </div>
+        <aside class="method-note">
+          <span class="method-number" aria-hidden="true">01 — 03</span>
+          <p>Ask a question. Explore an answer.<br><strong>Return to the source.</strong></p>
+          <p class="method-description">Passages from Dostoevsky’s works and external sources, brought together when relevant.</p>
+        </aside>
+      </section>
+
+      <article id="result" class="result" hidden aria-labelledby="question-heading">
+        <div class="result-topline">
+          <p class="eyebrow">Research question</p>
+          <button type="button" class="text-button" id="new-research"><span aria-hidden="true">↶ </span>New research</button>
+        </div>
+        <h1 id="question-heading" class="question-heading" tabindex="-1"></h1>
+        <div id="status" class="status" role="status" aria-live="polite" aria-atomic="true">
+          <span id="status-mark" class="status-mark" aria-hidden="true"></span>
+          <span id="status-text"></span>
+        </div>
+        <div id="error-notice" class="error-notice" role="alert" hidden>
+          <div><strong>We couldn’t finish this research.</strong><p id="error-message"></p></div>
+          <button type="button" id="retry" class="button secondary">Try again</button>
+        </div>
+        <section id="answer-section" class="answer-section" aria-labelledby="answer-heading" aria-busy="false">
+          <h2 id="answer-heading" class="eyebrow section-title">Answer</h2>
+          <div id="answer-placeholder" class="answer-placeholder">
+            <p>Reading, connecting, and gathering context…</p>
+            <div class="placeholder-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+          </div>
+          <div id="answer" class="answer" hidden></div>
+          <span id="writing-mark" class="writing-mark" aria-hidden="true" hidden></span>
+        </section>
+        <section id="sources" class="sources" hidden aria-labelledby="sources-heading">
+          <div class="sources-header"><h2 id="sources-heading" class="eyebrow section-title">Sources</h2><span id="source-count"></span></div>
+          <div id="corpus-group" class="source-group" hidden>
+            <h3>From the corpus</h3>
+            <p class="source-caption">Open a reference to read the retrieved passage.</p>
+            <div id="corpus-sources"></div>
+          </div>
+          <div id="web-group" class="source-group" hidden>
+            <h3>External sources</h3>
+            <ul id="web-sources" class="web-sources"></ul>
+          </div>
+        </section>
+        <p id="reading-note" class="reading-note" hidden>A starting point for closer reading. Explore the supporting passages and sources as you form your own interpretation.</p>
+      </article>
+      <noscript><p class="noscript">Enable JavaScript in your browser to submit a research question and read streamed answers.</p></noscript>
+    </main>
+    <footer class="site-footer"><span>Dostoevsky Research Agent</span><span>For the questions that stay with you.</span></footer>
+  </div>
+</body>
+</html>
