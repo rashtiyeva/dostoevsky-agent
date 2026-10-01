@@ -19,9 +19,7 @@ The interface uses **Server-Sent Events (SSE)** to expose research progress and 
 
 ## Demo
 
-<!-- Add demo video here -->
-
-`demo.mp4`
+[`demo.mp4`](https://github.com/user-attachments/assets/8d6be84a-94e3-4519-9f6f-807486a330ee)
 
 The interface displays live research stages, streams the answer progressively, and keeps the final response separate from expandable corpus and external sources.
 
