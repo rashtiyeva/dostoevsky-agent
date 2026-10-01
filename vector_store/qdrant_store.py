@@ -1,3 +1,6 @@
+import os
+
+from dotenv import load_dotenv
 from qdrant_client import QdrantClient
 from qdrant_client.models import (
     Distance,
@@ -7,14 +10,16 @@ from qdrant_client.models import (
 from chunking.models import Chunk
 from vector_store.point_mapper import to_point
 
+load_dotenv()
+
 COLLECTION_NAME = "dostoevsky_chunks"
 VECTOR_SIZE = 1024
 QDRANT_BATCH_SIZE = 100
 
 
 class QdrantStore:
-    def __init__(self, url: str = "http://localhost:6333") -> None:
-        self.client = QdrantClient(url=url)
+    def __init__(self, url: str | None = None) -> None:
+        self.client = QdrantClient(url=url or os.getenv("QDRANT_URL", "http://localhost:6333"))
 
     def create_collection(self) -> None:
         if self.client.collection_exists(COLLECTION_NAME):
