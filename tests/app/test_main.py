@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import AsyncMock
 
 from fastapi.testclient import TestClient
 
@@ -12,7 +12,7 @@ client = TestClient(app)
 def test_chat_returns_agent_response():
     original_run = agent.run
 
-    agent.run = Mock(
+    agent.run = AsyncMock(
         return_value=AgentResponse(
             answer="Test answer",
             corpus_sources=[

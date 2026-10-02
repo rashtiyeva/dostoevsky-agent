@@ -1,15 +1,18 @@
+import asyncio
+
 from app.services.rag_service import generate_rag_response
 from evaluation.generation.dataset import EVALUATION_CASES
 from evaluation.generation.evaluator import evaluate_answer
 
 
-def main() -> None:
+async def main() -> None:
     results = []
 
     for index, case in enumerate(EVALUATION_CASES, start=1):
         print(f"\n[{index}/{len(EVALUATION_CASES)}] {case.query}")
 
-        answer = generate_rag_response(case.query)
+        answer = await generate_rag_response(case.query)
+
         result = evaluate_answer(
             case=case,
             result=answer,
@@ -32,4 +35,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

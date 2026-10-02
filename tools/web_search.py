@@ -1,4 +1,4 @@
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 from app.config import OPENAI_API_KEY
 from tools.models import WebSearchResult, WebSource
@@ -6,13 +6,13 @@ from tools.models import WebSearchResult, WebSource
 
 class WebSearchTool:
     def __init__(self) -> None:
-        self.client = OpenAI(api_key=OPENAI_API_KEY)
+        self.client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
-    def search(
+    async def search(
         self,
         query: str,
     ) -> WebSearchResult:
-        response = self.client.responses.create(
+        response = await self.client.responses.create(
             model="gpt-5.6",
             tools=[
                 {"type": "web_search"}

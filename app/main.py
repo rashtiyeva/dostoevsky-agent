@@ -1,9 +1,8 @@
-from collections.abc import Iterable
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
-from fastapi.sse import EventSourceResponse, ServerSentEvent
+from fastapi.sse import EventSourceResponse
 from fastapi.staticfiles import StaticFiles
 
 from agent.agent import DostoevskyAgent
@@ -25,23 +24,20 @@ app.mount(
     name="static",
 )
 
+agent = DostoevskyAgent()
+
 
 @app.get("/", include_in_schema=False)
 def research_ui():
     return FileResponse(FRONTEND_DIR / "index.html")
 
-
-agent = DostoevskyAgent()
-
-
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-
 @app.post("/chat", response_model=ChatResponse)
-def chat(request: ChatRequest):
-    result = agent.run(request.message)
+async def chat(request: ChatRequest):
+    result = await agent.run(request.message)
 
     return ChatResponse(
         answer=result.answer,
@@ -71,9 +67,8 @@ def chat(request: ChatRequest):
     "/chat/stream",
     response_class=EventSourceResponse,
 )
-def chat_stream(
-    request: ChatRequest,
-) -> Iterable[ServerSentEvent]:
-    return to_sse_events(
+async def chat_stream(request: ChatRequest):
+    async for event in to_sse_events(
         agent.stream(request.message)
-    )
+    ):
+        yield event

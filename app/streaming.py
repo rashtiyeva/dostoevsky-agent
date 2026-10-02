@@ -1,14 +1,14 @@
-from collections.abc import Iterator
+from collections.abc import AsyncIterator
 
 from fastapi.sse import ServerSentEvent
 
 from agent.models import AgentStreamEvent
 
 
-def to_sse_events(
-    events: Iterator[AgentStreamEvent],
-) -> Iterator[ServerSentEvent]:
-    for event in events:
+async def to_sse_events(
+    events: AsyncIterator[AgentStreamEvent],
+) -> AsyncIterator[ServerSentEvent]:
+    async for event in events:
         yield ServerSentEvent(
             event=event.type.value,
             data=event.data,

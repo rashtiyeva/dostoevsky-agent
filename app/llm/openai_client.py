@@ -1,14 +1,14 @@
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 from app.config import OPENAI_API_KEY
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
-def generate_response(message: str) -> str:
-    response = client.responses.create(
+
+async def generate_response(message: str) -> str:
+    response = await client.responses.create(
         model="gpt-5.6",
-        input=message
+        input=message,
     )
-    
-    return response.output_text
 
+    return response.output_text
