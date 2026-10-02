@@ -1,5 +1,5 @@
 import json
-from collections.abc import Iterator
+from collections.abc import AsyncIterator
 
 from agent.models import (
     AgentDecision,
@@ -20,11 +20,11 @@ class DostoevskyAgent:
     def __init__(self) -> None:
         self.executor = ToolExecutor()
 
-    def decide_tools(
+    async def decide_tools(
         self,
         query: str,
     ) -> AgentDecision:
-        response = client.responses.create(
+        response = await client.responses.create(
             model="gpt-5.6",
             instructions=AGENT_INSTRUCTIONS,
             input=query,
@@ -52,8 +52,8 @@ class DostoevskyAgent:
             answer=response.output_text if not tool_calls else None,
         )
 
-    def run(self, query: str) -> AgentResponse:
-        decision = self.decide_tools(query)
+    async def run(self, query: str) -> AgentResponse:
+        decision = await self.decide_tools(query)
 
         if not decision.tool_calls:
             return AgentResponse(
@@ -66,10 +66,10 @@ class DostoevskyAgent:
         results = []
 
         for tool_call in decision.tool_calls:
-            result = self.executor.execute(tool_call)
+            result = await self.executor.execute(tool_call)
             results.append((tool_call, result))
 
-        answer = self._generate_final_answer(
+        answer = await self._generate_final_answer(
             query=query,
             results=results,
         )
@@ -82,17 +82,17 @@ class DostoevskyAgent:
             web_sources=web_sources,
         )
 
-    def stream(
+    async def stream(
         self,
         query: str,
-    ) -> Iterator[AgentStreamEvent]:
+    ) -> AsyncIterator[AgentStreamEvent]:
         try:
             yield AgentStreamEvent(
                 type=AgentStreamEventType.STATUS,
                 data={"message": "Analyzing your question..."},
             )
 
-            decision = self.decide_tools(query)
+            decision = await self.decide_tools(query)
 
             if not decision.tool_calls:
                 answer = decision.answer or (
@@ -131,7 +131,7 @@ class DostoevskyAgent:
                     data={"message": message},
                 )
 
-                result = self.executor.execute(tool_call)
+                result = await self.executor.execute(tool_call)
                 results.append((tool_call, result))
 
             yield AgentStreamEvent(
@@ -139,7 +139,7 @@ class DostoevskyAgent:
                 data={"message": "Generating answer..."},
             )
 
-            for text_delta in self._stream_final_answer(
+            async for text_delta in self._stream_final_answer(
                 query=query,
                 results=results,
             ):
@@ -189,7 +189,7 @@ class DostoevskyAgent:
                 },
             )
 
-    def _generate_final_answer(
+    async def _generate_final_answer(
         self,
         query: str,
         results: list[
@@ -201,32 +201,32 @@ class DostoevskyAgent:
             results=results,
         )
 
-        response = client.responses.create(
+        response = await client.responses.create(
             model="gpt-5.6",
             input=prompt,
         )
 
         return response.output_text
 
-    def _stream_final_answer(
+    async def _stream_final_answer(
         self,
         query: str,
         results: list[
             tuple[AgentToolCall, CorpusSearchResult | WebSearchResult]
         ],
-    ) -> Iterator[str]:
+    ) -> AsyncIterator[str]:
         prompt = self._build_final_prompt(
             query=query,
             results=results,
         )
 
-        stream = client.responses.create(
+        stream = await client.responses.create(
             model="gpt-5.6",
             input=prompt,
             stream=True,
         )
 
-        for event in stream:
+        async for event in stream:
             if event.type == "response.output_text.delta":
                 yield event.delta
 

@@ -7,7 +7,7 @@ from retrieval.reranked_retriever import RerankedRetriever
 retriever = RerankedRetriever()
 
 
-def generate_rag_response(query: str) -> GeneratedAnswer:
+async def generate_rag_response(query: str) -> GeneratedAnswer:
     chunks = retriever.retrieve(
         query=query,
         limit=5,
@@ -18,7 +18,7 @@ def generate_rag_response(query: str) -> GeneratedAnswer:
         chunks=chunks,
     )
 
-    answer = generate_response(prompt)
+    answer = await generate_response(prompt)
 
     citations = map_citations(
         answer=answer,

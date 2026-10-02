@@ -9,7 +9,7 @@ class ToolExecutor:
         self.corpus_search = CorpusSearchTool()
         self.web_search = WebSearchTool()
 
-    def execute(
+    async def execute(
         self,
         tool_call: AgentToolCall,
     ) -> CorpusSearchResult | WebSearchResult:
@@ -18,7 +18,7 @@ class ToolExecutor:
                 return self.corpus_search.search(tool_call.query)
 
             case ToolName.WEB_SEARCH:
-                return self.web_search.search(tool_call.query)
+                return await self.web_search.search(tool_call.query)
 
             case _:
                 raise ValueError(f"Unsupported tool: {tool_call.tool}")
